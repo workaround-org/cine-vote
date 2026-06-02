@@ -1,0 +1,27 @@
+# Maven / build output
+target/
+build/
+*.jar
+*.war
+*.class
+
+# Quarkus
+.quarkus/
+quarkus.log
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+
+# Local env / secrets
+.env
+*.local

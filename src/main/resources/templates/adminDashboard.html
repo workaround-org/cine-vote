@@ -1,0 +1,50 @@
+{#include base}
+{#title}Admin · cine-vote{/title}
+{#body}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+    <h1>Admin dashboard</h1>
+    <form method="post" action="/logout" class="inline"><button class="danger" type="submit">Log out</button></form>
+</div>
+
+{#if error}<div class="error">{error}</div>{/if}
+
+<div class="card">
+    <h2>Create a voting</h2>
+    <form method="post" action="/admin/votings">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required placeholder="Friday Movie Night">
+        <label for="description">Description (optional)</label>
+        <textarea id="description" name="description" rows="2"></textarea>
+        <p style="margin-top:.75rem;"><button type="submit">Create voting</button></p>
+    </form>
+</div>
+
+<h2>All votings</h2>
+{#if cards.isEmpty()}
+<p class="muted">No votings yet.</p>
+{#else}
+<ul class="bare">
+{#for card in cards}
+    <li class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <a href="/votings/{card.voting.id}" style="font-weight:600;">{card.voting.title}</a>
+                {#if card.voting.open}<span class="badge open">OPEN</span>{#else}<span class="badge closed">CLOSED</span>{/if}
+                <div class="muted" style="font-size:.85rem;">{card.optionCount} options · {card.totalVotes} votes</div>
+            </div>
+            <div>
+                {#if card.voting.open}
+                <form method="post" action="/admin/votings/{card.voting.id}/close" class="inline">
+                    <button class="danger" type="submit">End voting</button>
+                </form>
+                {#else}
+                <span class="muted">closed</span>
+                {/if}
+            </div>
+        </div>
+    </li>
+{/for}
+</ul>
+{/if}
+{/body}
+{/include}

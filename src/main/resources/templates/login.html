@@ -1,0 +1,14 @@
+{#include base}
+{#title}Admin login · cine-vote{/title}
+{#body}
+<h1>Admin login</h1>
+{#if error}<div class="error">Invalid username or password.</div>{/if}
+<form method="post" action="/j_security_check" class="card" style="max-width:360px;">
+    <label for="j_username">Username</label>
+    <input type="text" id="j_username" name="j_username" autofocus required>
+    <label for="j_password">Password</label>
+    <input type="password" id="j_password" name="j_password" required>
+    <p style="margin-top:.75rem;"><button type="submit">Log in</button></p>
+</form>
+{/body}
+{/include}

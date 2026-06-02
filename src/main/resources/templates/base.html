@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{#insert title}cine-vote{/}</title>
+    <style>
+        :root { --bg:#0f1117; --card:#1b1f2a; --accent:#4695EB; --gold:#be9100; --text:#e8e8ea; --muted:#9aa0ac; }
+        * { box-sizing: border-box; }
+        body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+        header { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; background:#12151d; border-bottom:1px solid #262b38; }
+        header a { color:var(--accent); text-decoration:none; font-weight:600; }
+        header .brand { font-size:1.25rem; color:var(--text); }
+        main { max-width:960px; margin:0 auto; padding:1.5rem; }
+        h1,h2 { line-height:1.2; }
+        a { color:var(--accent); }
+        .card { background:var(--card); border:1px solid #262b38; border-radius:10px; padding:1rem; margin-bottom:1rem; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
+        .option { background:var(--card); border:1px solid #262b38; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+        .option img { width:100%; height:260px; object-fit:cover; background:#0a0c11; }
+        .option .body { padding:.6rem .7rem; }
+        .option .title { font-weight:600; margin:0 0 .25rem; font-size:.95rem; }
+        .option .stats { color:var(--muted); font-size:.8rem; }
+        .votes { color:var(--gold); font-weight:700; }
+        .badge { display:inline-block; padding:.15rem .5rem; border-radius:999px; font-size:.75rem; font-weight:600; }
+        .badge.open { background:#16331f; color:#5fd17e; }
+        .badge.closed { background:#33161a; color:#e07a85; }
+        input[type=text], textarea, input[type=password] { width:100%; padding:.5rem; border-radius:6px; border:1px solid #333a49; background:#0d0f15; color:var(--text); }
+        button, .btn { background:var(--accent); color:#fff; border:none; padding:.55rem 1rem; border-radius:6px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
+        button.danger { background:#b3434f; }
+        label { display:block; margin:.5rem 0 .25rem; color:var(--muted); font-size:.85rem; }
+        form.inline { display:inline; }
+        .error { background:#33161a; color:#e07a85; padding:.6rem .8rem; border-radius:6px; margin-bottom:1rem; }
+        .muted { color:var(--muted); }
+        ul.bare { list-style:none; padding:0; }
+    </style>
+</head>
+<body>
+<header>
+    <a class="brand" href="/">🎬 cine-vote</a>
+    <nav>
+        <a href="/">Votings</a>
+        &nbsp;|&nbsp;
+        <a href="/admin">Admin</a>
+    </nav>
+</header>
+<main>
+    {#insert body}{/}
+</main>
+</body>
+</html>

@@ -1,0 +1,2 @@
+-- Seed data for dev/test goes here (loaded when hibernate-orm.database.generation creates the schema).
+-- The admin user is bootstrapped programmatically in StartupBootstrap, not here.

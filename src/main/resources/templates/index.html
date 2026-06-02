@@ -1,0 +1,24 @@
+{#include base}
+{#title}cine-vote · Votings{/title}
+{#body}
+<h1>Movie votings</h1>
+{#if cards.isEmpty()}
+<p class="muted">No votings yet. An admin can create one.</p>
+{#else}
+<ul class="bare">
+{#for card in cards}
+    <li class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <a href="/votings/{card.voting.id}" style="font-size:1.1rem;font-weight:600;">{card.voting.title}</a>
+                {#if card.voting.open}<span class="badge open">OPEN</span>{#else}<span class="badge closed">CLOSED</span>{/if}
+                <div class="muted" style="font-size:.85rem;">{card.optionCount} options · {card.totalVotes} votes</div>
+            </div>
+            <a class="btn" href="/votings/{card.voting.id}">View</a>
+        </div>
+    </li>
+{/for}
+</ul>
+{/if}
+{/body}
+{/include}
