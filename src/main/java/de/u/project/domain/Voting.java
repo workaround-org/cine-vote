@@ -13,9 +13,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.qute.TemplateData;
 
 @Entity
 @Table(name = "voting")
+@TemplateData
 public class Voting extends PanacheEntityBase {
 
     @Id

@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.qute.TemplateData;
 
 /**
  * A movie nominated as an option in a voting. Stores a snapshot of the OMDb
@@ -20,6 +21,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
  */
 @Entity
 @Table(name = "voting_option", uniqueConstraints = @UniqueConstraint(columnNames = { "voting_id", "imdbId" }))
+@TemplateData
 public class VotingOption extends PanacheEntityBase {
 
     @Id
