@@ -1,6 +1,8 @@
 package de.u.project.movie;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,14 +67,14 @@ class MovieSearchCacheTest {
         i.year = "2010";
         i.poster = "http://poster";
         resp.search = List.of(i);
-        when(omdbClient.search("Inception")).thenReturn(resp);
+        when(omdbClient.search(anyString(), eq("Inception"))).thenReturn(resp);
 
         List<MovieResult> first = service.search("Inception");
         List<MovieResult> second = service.search("Inception");
 
         assertThat(first).hasSize(1);
         assertThat(second).isEqualTo(first);
-        verify(omdbClient, times(1)).search("Inception");
+        verify(omdbClient, times(1)).search(anyString(), eq("Inception"));
     }
 
     @Test
@@ -86,13 +88,13 @@ class MovieSearchCacheTest {
         resp.runtime = "148 min";
         resp.imdbRating = "8.8";
         resp.poster = "http://poster";
-        when(omdbClient.findById("tt1375666")).thenReturn(resp);
+        when(omdbClient.findById(anyString(), eq("tt1375666"))).thenReturn(resp);
 
         MovieDetail first = service.getDetail("tt1375666");
         MovieDetail second = service.getDetail("tt1375666");
 
         assertThat(second).isEqualTo(first);
-        verify(omdbClient, times(1)).findById("tt1375666");
+        verify(omdbClient, times(1)).findById(anyString(), eq("tt1375666"));
     }
 
     @Test
@@ -100,13 +102,13 @@ class MovieSearchCacheTest {
         OmdbSearchResponse resp = new OmdbSearchResponse();
         resp.response = "False";
         resp.error = "Movie not found!";
-        when(omdbClient.search("Inception")).thenReturn(resp);
-        when(omdbClient.search("Matrix")).thenReturn(resp);
+        when(omdbClient.search(anyString(), eq("Inception"))).thenReturn(resp);
+        when(omdbClient.search(anyString(), eq("Matrix"))).thenReturn(resp);
 
         service.search("Inception");
         service.search("Matrix");
 
-        verify(omdbClient, times(1)).search("Inception");
-        verify(omdbClient, times(1)).search("Matrix");
+        verify(omdbClient, times(1)).search(anyString(), eq("Inception"));
+        verify(omdbClient, times(1)).search(anyString(), eq("Matrix"));
     }
 }

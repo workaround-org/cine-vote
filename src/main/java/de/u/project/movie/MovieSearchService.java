@@ -1,10 +1,15 @@
 package de.u.project.movie;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -24,10 +29,14 @@ public class MovieSearchService {
 
     private static final Logger LOG = Logger.getLogger(MovieSearchService.class);
     private static final String NOT_AVAILABLE = "N/A";
+    private static final Pattern OMDB_ERROR = Pattern.compile("\"Error\"\\s*:\\s*\"([^\"]*)\"");
 
     @Inject
     @RestClient
     OmdbClient omdbClient;
+
+    @ConfigProperty(name = "cinevote.omdb.api-key")
+    String configuredApiKey;
 
     /**
      * Self-reference (the Arc client proxy) used to invoke the {@code @CacheResult}
@@ -56,7 +65,11 @@ public class MovieSearchService {
     List<MovieResult> searchCached(String term) {
         OmdbSearchResponse response;
         try {
-            response = omdbClient.search(term);
+            response = omdbClient.search(apiKey(), term);
+        } catch (WebApplicationException wae) {
+            String detail = describeOmdb(wae);
+            LOG.warnf(wae, "OMDb search failed for term '%s' — %s", term, detail);
+            throw new MovieSearchException("Movie search failed (" + detail + ").", wae);
         } catch (RuntimeException e) {
             LOG.warnf(e, "OMDb search failed for term '%s'", term);
             throw new MovieSearchException("Movie search is currently unavailable. Please try again.", e);
@@ -86,7 +99,11 @@ public class MovieSearchService {
     MovieDetail detailCached(String imdbId) {
         OmdbMovieResponse response;
         try {
-            response = omdbClient.findById(imdbId);
+            response = omdbClient.findById(apiKey(), imdbId);
+        } catch (WebApplicationException wae) {
+            String detail = describeOmdb(wae);
+            LOG.warnf(wae, "OMDb detail lookup failed for id '%s' — %s", imdbId, detail);
+            throw new MovieSearchException("Movie lookup failed (" + detail + ").", wae);
         } catch (RuntimeException e) {
             LOG.warnf(e, "OMDb detail lookup failed for id '%s'", imdbId);
             throw new MovieSearchException("Movie lookup is currently unavailable. Please try again.", e);
@@ -104,10 +121,75 @@ public class MovieSearchService {
                 clean(response.poster));
     }
 
+    private String apiKey() {
+        return sanitizeKey(configuredApiKey);
+    }
+
+    /**
+     * Normalizes the configured OMDb key: strips surrounding whitespace and line
+     * endings (a trailing CR from a CRLF {@code .env} file is a common culprit) and
+     * any wrapping quotes. A stray byte here corrupts the query URL and yields an
+     * upstream Cloudflare 400 instead of OMDb's own JSON error.
+     */
+    static String sanitizeKey(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String key = raw.strip();
+        if (key.length() >= 2
+                && ((key.startsWith("\"") && key.endsWith("\"")) || (key.startsWith("'") && key.endsWith("'")))) {
+            key = key.substring(1, key.length() - 1).strip();
+        }
+        return key;
+    }
+
     private static String clean(String value) {
         if (value == null || value.isBlank() || NOT_AVAILABLE.equalsIgnoreCase(value)) {
             return null;
         }
         return value;
+    }
+
+    /**
+     * Builds a diagnostic string from a failed OMDb HTTP response: status code plus
+     * OMDb's own {@code Error} message (e.g. "Invalid API key!"). The bare rest-client
+     * exception only carries "Bad Request, status code 400" — the useful reason lives
+     * in the response body, which this reads.
+     */
+    private static String describeOmdb(WebApplicationException wae) {
+        Response r = wae.getResponse();
+        if (r == null) {
+            return wae.getMessage();
+        }
+        int status = r.getStatus();
+        String body = readBody(r);
+        String error = extractError(body);
+        if (error != null && !error.isBlank()) {
+            return "HTTP " + status + ": " + error;
+        }
+        return body.isBlank() ? "HTTP " + status : "HTTP " + status + ": " + body.strip();
+    }
+
+    private static String readBody(Response r) {
+        try {
+            if (r.hasEntity()) {
+                return r.readEntity(String.class);
+            }
+        } catch (RuntimeException ignore) {
+            // Buffered/built responses may reject readEntity; fall back to the raw entity.
+            Object entity = r.getEntity();
+            if (entity != null) {
+                return entity.toString();
+            }
+        }
+        return "";
+    }
+
+    private static String extractError(String body) {
+        if (body == null || body.isBlank()) {
+            return null;
+        }
+        Matcher m = OMDB_ERROR.matcher(body);
+        return m.find() ? m.group(1) : null;
     }
 }

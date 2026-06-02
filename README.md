@@ -18,7 +18,7 @@ metadata (poster + short stats) is pulled from the [OMDb API](https://www.omdbap
 | Property | Env var | Default | Purpose |
 |---|---|---|---|
 | `cinevote.omdb.api-key` | `OMDB_API_KEY` | `demo` | OMDb API key — get a free one at [omdbapi.com/apikey.aspx](https://www.omdbapi.com/apikey.aspx) |
-| `quarkus.rest-client.omdb.url` | — | `https://www.omdbapi.com` | OMDb base URL |
+| `quarkus.rest-client.omdb.url` | — | `https://www.omdbapi.com/` | OMDb base URL (trailing slash required — the reactive client drops the path without it) |
 | `cinevote.admin.bootstrap-username` | `ADMIN_USERNAME` | `admin` | Initial admin username (created at startup if no admin exists) |
 | `cinevote.admin.bootstrap-password` | `ADMIN_PASSWORD` | `changeme` | Initial admin password (stored bcrypt-hashed) |
 | `quarkus.http.auth.session.encryption-key` | `SESSION_ENCRYPTION_KEY` | dev placeholder | Form-auth session cookie key (≥ 32 chars) — **set a real secret in prod** |
@@ -50,7 +50,9 @@ OMDb key by default — set `OMDB_API_KEY` to exercise real search. Dev UI:
 ```
 
 Tests run against an ephemeral PostgreSQL (Dev Services, requires Docker) and mock
-the OMDb REST client, so no network or real API key is needed.
+the OMDb REST client, so no network or real API key is needed. To also exercise the
+real API, export your key and run `OMDB_API_KEY=yourkey ./mvnw test` — this enables
+`OmdbLiveSearchTest`, which calls live OMDb; without the env var that test is skipped.
 
 ## Packaging and running
 
