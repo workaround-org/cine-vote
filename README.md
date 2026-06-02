@@ -11,6 +11,7 @@ metadata (poster + short stats) is pulled from the [OMDb API](https://www.omdbap
 - **Approval voting**: a participant may select more than one option; each selected option gets one vote.
 - **Best-effort one ballot per voter** via an HTTP-only session cookie.
 - Each option stores a snapshot of the movie (title, year, genre, runtime, IMDb rating, poster URL) so results stay stable.
+- OMDb responses are cached in-memory (Caffeine) to reduce external API calls; the snapshot + cache together mean repeated lookups almost never hit the OMDb API.
 
 ## Configuration
 
@@ -21,6 +22,10 @@ metadata (poster + short stats) is pulled from the [OMDb API](https://www.omdbap
 | `cinevote.admin.bootstrap-username` | `ADMIN_USERNAME` | `admin` | Initial admin username (created at startup if no admin exists) |
 | `cinevote.admin.bootstrap-password` | `ADMIN_PASSWORD` | `changeme` | Initial admin password (stored bcrypt-hashed) |
 | `quarkus.http.auth.session.encryption-key` | `SESSION_ENCRYPTION_KEY` | dev placeholder | Form-auth session cookie key (≥ 32 chars) — **set a real secret in prod** |
+| `quarkus.cache.caffeine."omdb-search".expire-after-write` | — | `6H` | TTL for cached movie search results |
+| `quarkus.cache.caffeine."omdb-search".maximum-size` | — | `500` | Max number of cached search terms |
+| `quarkus.cache.caffeine."omdb-detail".expire-after-write` | — | `24H` | TTL for cached movie detail lookups |
+| `quarkus.cache.caffeine."omdb-detail".maximum-size` | — | `1000` | Max number of cached movie details |
 
 The admin user is bootstrapped on first startup from the config above. Change the
 default password before exposing the app.
