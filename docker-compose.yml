@@ -1,0 +1,66 @@
+# cine-vote — Portainer stack, fronted by an existing Traefik on the `web` network.
+#
+# Set the secrets as stack environment variables in Portainer, or copy
+# stack.env.example to stack.env and fill it in (see that file).
+# Required: DB_PASSWORD, OMDB_API_KEY, ADMIN_PASSWORD,
+# SESSION_ENCRYPTION_KEY (>= 32 chars). Change the Host() rule to your domain.
+
+services:
+  cine-vote:
+    image: ghcr.io/workaround-org/cine-vote:latest
+    restart: unless-stopped
+    depends_on:
+      cine-vote-db:
+        condition: service_healthy
+    environment:
+      # Quarkus prod datasource (the prod profile uses hibernate generation=update).
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://cine-vote-db:5432/${DB_NAME:-cinevote}
+      QUARKUS_DATASOURCE_USERNAME: ${DB_USER:-cinevote}
+      QUARKUS_DATASOURCE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      # OMDb movie API key — free at https://www.omdbapi.com/apikey.aspx
+      OMDB_API_KEY: ${OMDB_API_KEY:?set OMDB_API_KEY}
+      # Admin bootstrap (created on first start if no admin user exists).
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD}
+      # Form-auth session cookie encryption key — MUST be >= 32 characters.
+      SESSION_ENCRYPTION_KEY: ${SESSION_ENCRYPTION_KEY:?set SESSION_ENCRYPTION_KEY (>=32 chars)}
+    networks:
+      - web
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.cinevote.rule=Host(`cinevote.mymiggi.de`)
+      - traefik.http.routers.cinevote.entrypoints=websecure
+      - traefik.http.routers.cinevote.tls=true
+      - traefik.http.routers.cinevote.tls.certresolver=lets-encrypt
+      - traefik.http.routers.cinevote.service=cinevote
+      - traefik.http.services.cinevote.loadbalancer.server.port=8080
+
+  cine-vote-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-cinevote}
+      POSTGRES_USER: ${DB_USER:-cinevote}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    volumes:
+      - cinevote-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cinevote} -d ${DB_NAME:-cinevote}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+volumes:
+  cinevote-db-data:
+
+networks:
+  # Traefik's shared proxy network — must already exist (external).
+  web:
+    external: true
+  # Private network for app <-> db; not reachable by Traefik.
+  internal:

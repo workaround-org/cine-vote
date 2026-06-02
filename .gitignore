@@ -25,3 +25,5 @@ quarkus.log
 # Local env / secrets
 .env
 *.local
+# Portainer stack env with real secrets — commit stack.env.example instead.
+stack.env
