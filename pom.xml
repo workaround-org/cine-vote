@@ -3,14 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.u_project</groupId>
     <artifactId>cine-vote</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>quarkus</packaging>
 
     <scm>
         <connection>scm:git:https://github.com/workaround-org/cine-vote.git</connection>
         <developerConnection>scm:git:git@github.com:workaround-org/cine-vote.git</developerConnection>
         <url>https://github.com/workaround-org/cine-vote</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.0</tag>
     </scm>
 
     <properties>
@@ -150,7 +150,7 @@
                          the GitHub Actions image build, so perform only installs. -->
                     <goals>install</goals>
                     <preparationGoals>clean verify</preparationGoals>
-                    <scmCommentPrefix>🔖 </scmCommentPrefix>
+                    <scmCommentPrefix>&#x1f516; </scmCommentPrefix>
                 </configuration>
             </plugin>
             <plugin>
