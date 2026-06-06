@@ -108,6 +108,33 @@ class VotingServiceTest {
         assertThat(service.optionCount(v)).isEqualTo(2);
     }
 
+    @Test
+    void resultsIncludeSharePercentAndLeader() {
+        Voting v = service.create("Friday Night", null);
+        VotingOption low = newOption(v, "tt1", "Low");
+        VotingOption high = newOption(v, "tt2", "High");
+        addVotes(high, 3);
+        addVotes(low, 1);
+
+        List<OptionTally> results = service.results(v.id);
+
+        assertThat(results.get(0).percent()).isEqualTo(75);
+        assertThat(results.get(0).leading()).isTrue();
+        assertThat(results.get(1).percent()).isEqualTo(25);
+        assertThat(results.get(1).leading()).isFalse();
+    }
+
+    @Test
+    void resultsWithoutVotesHaveZeroPercentAndNoLeader() {
+        Voting v = service.create("Friday Night", null);
+        newOption(v, "tt1", "Only");
+
+        List<OptionTally> results = service.results(v.id);
+
+        assertThat(results.get(0).percent()).isZero();
+        assertThat(results.get(0).leading()).isFalse();
+    }
+
     @Transactional
     VotingOption newOption(Voting voting, String imdbId, String title) {
         Voting attached = votings.findById(voting.id);

@@ -3,7 +3,9 @@ package de.u.project.voting;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -73,8 +75,16 @@ public class VotingService {
     public List<OptionTally> results(UUID votingId) {
         Voting v = get(votingId);
         List<VotingOption> votingOptions = options.list("voting", v);
+        Map<VotingOption, Long> counts = votingOptions.stream()
+                .collect(Collectors.toMap(o -> o, votes::countByOption));
+        long total = counts.values().stream().mapToLong(Long::longValue).sum();
+        long max = counts.values().stream().mapToLong(Long::longValue).max().orElse(0);
         return votingOptions.stream()
-                .map(o -> new OptionTally(o, votes.countByOption(o)))
+                .map(o -> {
+                    long count = counts.get(o);
+                    int percent = total == 0 ? 0 : Math.round(100f * count / total);
+                    return new OptionTally(o, count, percent, count > 0 && count == max);
+                })
                 .sorted(Comparator.comparingLong(OptionTally::votes).reversed())
                 .toList();
     }

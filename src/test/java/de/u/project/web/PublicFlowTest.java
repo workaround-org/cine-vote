@@ -13,12 +13,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.u.project.domain.BallotRepository;
+import de.u.project.domain.Vote;
 import de.u.project.domain.VoteRepository;
 import de.u.project.domain.Voting;
 import de.u.project.domain.VotingOption;
 import de.u.project.domain.VotingOptionRepository;
 import de.u.project.domain.VotingRepository;
 import de.u.project.movie.MovieDetail;
+import de.u.project.movie.MovieSearchException;
 import de.u.project.movie.MovieSearchService;
 import de.u.project.voting.VotingService;
 import io.quarkus.test.InjectMock;
@@ -108,6 +110,81 @@ class PublicFlowTest {
                 .header("Location", containsString("error"));
 
         assertThat(votes.countByOption(opt)).isEqualTo(1);
+    }
+
+    @Test
+    void successfulVoteRedirectsWithConfirmationFlag() {
+        Voting v = openVoting();
+        VotingOption opt = addOption(v, "tt1375666", "Inception");
+
+        given().contentType("application/x-www-form-urlencoded")
+                .formParam("optionId", opt.id.toString())
+                .redirects().follow(false)
+                .when().post("/votings/" + v.id + "/votes")
+                .then().statusCode(303)
+                .header("Location", containsString("voted=true"));
+    }
+
+    @Test
+    void votedFlagRendersSuccessBanner() {
+        Voting v = openVoting();
+        addOption(v, "tt1375666", "Inception");
+
+        given().when().get("/votings/" + v.id + "?voted=true")
+                .then().statusCode(200)
+                .body(containsString("Your votes are in"));
+    }
+
+    @Test
+    void closedVotingHighlightsWinner() {
+        Voting v = openVoting();
+        VotingOption winner = addOption(v, "tt1", "High");
+        VotingOption loser = addOption(v, "tt2", "Low");
+        addVote(winner, "voter-1");
+        addVote(winner, "voter-2");
+        addVote(loser, "voter-3");
+        votingService.end(v.id);
+
+        String body = given().when().get("/votings/" + v.id)
+                .then().statusCode(200)
+                .extract().asString();
+
+        assertThat(body).contains("Winner");
+    }
+
+    @Test
+    void openVotingDoesNotShowWinnerBadge() {
+        Voting v = openVoting();
+        VotingOption opt = addOption(v, "tt1", "High");
+        addVote(opt, "voter-1");
+
+        String body = given().when().get("/votings/" + v.id)
+                .then().statusCode(200)
+                .extract().asString();
+
+        assertThat(body).doesNotContain("Winner");
+    }
+
+    @Test
+    void searchErrorDoesNotClaimNoMatches() {
+        Voting v = openVoting();
+        when(movieSearch.search(anyString()))
+                .thenThrow(new MovieSearchException("Movie search is currently unavailable. Please try again.", null));
+
+        String body = given().when().get("/search?votingId=" + v.id + "&q=Inception")
+                .then().statusCode(200)
+                .extract().asString();
+
+        assertThat(body).contains("unavailable").doesNotContain("No matches");
+    }
+
+    @Transactional
+    void addVote(VotingOption option, String voterId) {
+        VotingOption attached = options.findById(option.id);
+        Vote vote = new Vote();
+        vote.option = attached;
+        vote.voterId = voterId;
+        votes.persist(vote);
     }
 
     @Transactional

@@ -78,12 +78,14 @@ public class PublicResource {
     @Path("/votings/{id}")
     public TemplateInstance viewVoting(@PathParam("id") UUID id,
             @CookieParam(VOTER_COOKIE) String voterId,
-            @RestQuery String error) {
+            @RestQuery String error,
+            @RestQuery String voted) {
         Voting v = votingService.get(id);
         boolean alreadyVoted = voterId != null && ballots.hasVoted(v, voterId);
         return voting.data("voting", v)
                 .data("tallies", votingService.results(id))
                 .data("alreadyVoted", alreadyVoted)
+                .data("justVoted", "true".equals(voted))
                 .data("error", error);
     }
 
@@ -136,7 +138,7 @@ public class PublicResource {
                 .build();
         try {
             voteService.castBallot(id, optionIds, voter);
-            return redirect("/votings/" + id, null, cookie);
+            return redirect("/votings/" + id + "?voted=true", null, cookie);
         } catch (IllegalArgumentException e) {
             return redirect("/votings/" + id, "Select at least one option.", cookie);
         } catch (VotingClosedException e) {

@@ -7,15 +7,17 @@
 {#else}
 <ul class="bare">
 {#for card in cards}
-    <li class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <a href="/votings/{card.voting.id}" style="font-size:1.1rem;font-weight:600;">{card.voting.title}</a>
-                {#if card.voting.open}<span class="badge open">OPEN</span>{#else}<span class="badge closed">CLOSED</span>{/if}
-                <div class="muted" style="font-size:.85rem;">{card.optionCount} options · {card.totalVotes} votes</div>
+    <li>
+        <a class="card cardlink" href="/votings/{card.voting.id}">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+                <div>
+                    <span style="font-size:1.1rem;font-weight:600;color:var(--accent);">{card.voting.title}</span>
+                    {#if card.voting.open}<span class="badge open">OPEN</span>{#else}<span class="badge closed">CLOSED</span>{/if}
+                    <div class="muted" style="font-size:.85rem;">{card.optionCount} options · {card.totalVotes} votes</div>
+                </div>
+                <span style="color:var(--muted);font-size:1.25rem;" aria-hidden="true">›</span>
             </div>
-            <a class="btn" href="/votings/{card.voting.id}">View</a>
-        </div>
+        </a>
     </li>
 {/for}
 </ul>
