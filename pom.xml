@@ -6,6 +6,13 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>quarkus</packaging>
 
+    <scm>
+        <connection>scm:git:https://github.com/workaround-org/cine-vote.git</connection>
+        <developerConnection>scm:git:git@github.com:workaround-org/cine-vote.git</developerConnection>
+        <url>https://github.com/workaround-org/cine-vote</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <compiler-plugin.version>3.15.0</compiler-plugin.version>
         <maven.compiler.release>25</maven.compiler.release>
@@ -17,6 +24,7 @@
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <assertj.version>3.27.3</assertj.version>
+        <release-plugin.version>3.1.1</release-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -131,6 +139,18 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${release-plugin.version}</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <!-- No artifact repository configured; the v* tag push triggers
+                         the GitHub Actions image build, so perform only installs. -->
+                    <goals>install</goals>
+                    <preparationGoals>clean verify</preparationGoals>
+                    <scmCommentPrefix>🔖 </scmCommentPrefix>
                 </configuration>
             </plugin>
             <plugin>
