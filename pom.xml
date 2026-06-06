@@ -3,14 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.u_project</groupId>
     <artifactId>cine-vote</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>quarkus</packaging>
 
     <scm>
         <connection>scm:git:https://github.com/workaround-org/cine-vote.git</connection>
         <developerConnection>scm:git:git@github.com:workaround-org/cine-vote.git</developerConnection>
         <url>https://github.com/workaround-org/cine-vote</url>
-        <tag>v1.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
